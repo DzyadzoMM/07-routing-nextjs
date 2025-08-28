@@ -1,4 +1,4 @@
-import Image from "next/image";
+
 import css from "./page.module.css";
 
 export default function Home() {
@@ -19,6 +19,5 @@ export default function Home() {
     </p>
   </div>
 </main>
-
   );
 }

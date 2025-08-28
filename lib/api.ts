@@ -1,43 +1,34 @@
-import axios from 'axios';
-import  {Note}  from '../types/note';
+import axios from "axios";
+import type { Note } from "@/types/note";
 
-const API_BASE_URL = 'https://notehub-public.goit.study/api';
-const TOKEN = process.env.NEXT_PUBLIC_NOTEHUB_TOKEN;
-
-const instance = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    Authorization: `Bearer ${TOKEN}`,
-  },
-});
-
-export interface FetchNotesResponse{
+interface FetchResponse {
   notes: Note[];
   totalPages: number;
 }
-export interface FetchNotesParams {
-  page?: number;
-  perPage?: number;
-  search?: string;
+
+export async function fetchNotes(page: number = 1, search: string = "", perPage: number = 12): Promise<FetchResponse> {
+    const response = await axios.get<FetchResponse>("https://notehub-public.goit.study/api/notes", //очікуємо дані формату FetchResponse
+        {params: {page, search, perPage}, 
+        headers: { Authorization: `Bearer ${process.env.NEXT_PUBLIC_NOTEHUB_TOKEN}`},}     )
+    return response.data; }
+
+export async function createNote(note: { title: string; content: string; tag: string }): Promise<Note> {
+  const response = await axios.post<Note>("https://notehub-public.goit.study/api/notes", note,
+  {headers: { Authorization: `Bearer ${process.env.NEXT_PUBLIC_NOTEHUB_TOKEN}`},}
+  )
+  return response.data;
 }
 
-export const fetchNotes = async (params: FetchNotesParams = {}): Promise<FetchNotesResponse> => {
-  const { data } = await instance.get<FetchNotesResponse>('/notes', { params });
-  return data;
-};
-
-export interface CreateNotePayload {
-  title: string;
-  content: string;
-  tag: string;
+export async function deleteNote(id: string): Promise<Note> {
+  const response = await axios.delete<Note>(`https://notehub-public.goit.study/api/notes/${id}`,
+        {headers: { Authorization: `Bearer ${process.env.NEXT_PUBLIC_NOTEHUB_TOKEN}`},}
+  )
+  return response.data;
 }
 
-export const createNote = async (payload: CreateNotePayload): Promise<Note> => {
-  const { data } = await instance.post<Note>('/notes', payload);
-  return data;
-};
-
-export const deleteNote = async (id: string): Promise<{ id: string }> => {
-  const { data } = await instance.delete<{id: string }>(`/notes/${id}`);
-  return data;
-};
+export async function fetchNoteById(id: string): Promise<Note> {
+  const response = await axios.get<Note>(`https://notehub-public.goit.study/api/notes/${id}`,
+        {headers: { Authorization: `Bearer ${process.env.NEXT_PUBLIC_NOTEHUB_TOKEN}`},}
+  )
+  return response.data;
+} 
