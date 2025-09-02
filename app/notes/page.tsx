@@ -1,26 +1,23 @@
 import { QueryClient, HydrationBoundary, dehydrate } from "@tanstack/react-query";
-import { fetchNotes } from "@/lib/api";
+import { getNotes } from "@/lib/api"; // Використовуємо правильну функцію
 import NotesClient from "./Notes.client";
 
 type Props = {
-    params: Promise<{ page: number, search: string, perPage: number }>
+  params: { tag: string }; // Отримуємо тег з URL
 };
 
-export default async function Notes({ params }: Props) {
-    const { page, search, perPage} = await params;
-    const queryClient = new QueryClient();
+export default async function FilteredNotesPage({ params }: Props) {
+  const { tag } = params;
+  const queryClient = new QueryClient();
 
-    await queryClient.prefetchQuery({
-        queryKey: ["notes", page, search, perPage],
-        queryFn: () => fetchNotes(page, search, perPage),
-        
-      });
-    
-      return (
-        <HydrationBoundary state={dehydrate(queryClient)}>
-          <NotesClient />
-        </HydrationBoundary>
-    );
-    
-    
+  await queryClient.prefetchQuery({
+    queryKey: ["notes", tag], // Додаємо тег в queryKey
+    queryFn: () => getNotes(tag === "All notes" ? undefined : tag),
+  });
+
+  return (
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <NotesClient tag={tag} /> // Передаємо тег в NotesClient
+    </HydrationBoundary>
+  );
 }
